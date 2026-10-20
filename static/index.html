@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FP Nexus Agent — Autonomous Freelance Studio & Client Acquisition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--card-bg);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .brand {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+    }
+    .brand-badge {
+      font-size: 0.7rem;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .nav {
+      padding: 16px 12px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+    }
+    .nav-item.active {
+      background: var(--accent-glow);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    /* Main Content */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .topbar {
+      height: 60px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(17, 24, 39, 0.5);
+      backdrop-filter: blur(10px);
+    }
+    .topbar-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .model-status-pill {
+      font-size: 0.8rem;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .model-status-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .content-area {
+      flex: 1;
+      padding: 28px;
+      overflow-y: auto;
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    /* Cards and Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    /* Forms */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: #0d1322;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border 0.15s ease;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: #1f2937;
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: #374151; }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+    /* Badges & Metric Pills */
+    .metric-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .metric-pill {
+      background: #0d1322;
+      border: 1px solid var(--card-border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .metric-pill-label {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .metric-pill-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tag-chip {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      display: inline-block;
+      margin-right: 6px;
+      margin-bottom: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .package-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .package-card {
+      background: #0d1322;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .package-tier-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .package-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 4px 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .package-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    /* Output Box */
+    .output-box {
+      background: #0d1322;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #e5e7eb;
+      white-space: pre-wrap;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 14px;
+    }
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+    th {
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+    td {
+      color: var(--text-muted);
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+    }
+    .status-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-pass { background: rgba(16, 185, 129, 0.15); color: var(--accent); }
+    .status-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .status-fail { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+      border-top-color: #000;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">
+        <span>⚡ FP Nexus</span>
+        <span class="brand-badge">FREE AI</span>
+      </div>
+      <div class="brand-sub">Freelance Platform Growth Agent</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="switchTab('gigs')">
+        <span>📦 Gigs & Services</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('proposals')">
+        <span>🎯 Proposals & Briefs</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('seo')">
+        <span>📈 SEO & Freshness</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('inbox')">
+        <span>💬 Client Inbox</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('competitors')">
+        <span>🔍 Competitor Radar</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('brain')">
+        <span>🧠 Story Bank & Proof</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('profile')">
+        <span>👤 Freelancer Profile</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('settings')">
+        <span>⚙️ Settings & Models</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>MCP Port: <b>8001 (Stdio Ready)</b></div>
+      <div>82 Rules: <b>Strict Active</b></div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Gigs & Services Studio</div>
+      <div class="model-status-pill">
+        <span class="dot"></span>
+        <span id="active-model-display">OpenRouter: Free Gemma 4 / Llama 3.3</span>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: GIGS -->
+      <section id="pane-gigs" class="tab-pane active">
+        <div class="grid-2">
+          <!-- Form -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Optimize / Draft Gig</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Freelance Platform</label>
+              <select id="gig-platform" class="form-select">
+                <option value="fiverr">Fiverr (Gigs, Search Tags, 3 Tiers, FAQs)</option>
+                <option value="upwork">Upwork (Project Catalog)</option>
+                <option value="freelancer">Freelancer.com</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service Topic & Core Deliverable</label>
+              <input type="text" id="gig-topic" class="form-input" placeholder="e.g. Python Playwright Web Scraper with Anti-Bot Rotation">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Search Keywords (comma-separated)</label>
+              <input type="text" id="gig-keywords" class="form-input" placeholder="e.g. python scraper, web scraping, playwright, automation, api">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <input type="text" id="gig-category" class="form-input" value="Programming & Tech">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Special Instructions or Constraints</label>
+              <textarea id="gig-instructions" class="form-textarea" placeholder="e.g. emphasize sub-500ms execution latency, clean documentation, and Docker support"></textarea>
+            </div>
+            <button class="btn" id="btn-optimize-gig" onclick="optimizeGig()">
+              <span>🚀 Generate 82-Rule Gig</span>
+            </button>
+          </div>
+
+          <!-- Preview & Audit -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Live Preview & Algorithmic Audit</h2>
+              <button class="btn btn-secondary btn-sm" id="btn-save-gig" style="display:none;" onclick="saveCurrentGig()">💾 Save Gig to DB</button>
+            </div>
+
+            <div class="metric-group" id="gig-metrics" style="display:none;">
+              <div class="metric-pill">
+                <span class="metric-pill-label">SEO Score</span>
+                <span class="metric-pill-val" id="gig-seo-val">--</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-pill-label">82-Rule Score</span>
+                <span class="metric-pill-val" id="gig-rule-val">--</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-pill-label">Flesch Ease</span>
+                <span class="metric-pill-val" id="gig-flesch-val">--</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-pill-label">AI Tells Found</span>
+                <span class="metric-pill-val" id="gig-tells-val">0</span>
+              </div>
+            </div>
+
+            <div id="gig-preview-container">
+              <p style="color:var(--text-dim);font-size:0.9rem;">Fill in the service details and click Generate to produce an optimized gig passing the 82-rule humanizer audit.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Gigs Table -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Active Gigs & Freshness Registry</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadSavedGigs()">🔄 Refresh List</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Gig Title</th>
+                  <th>Tags</th>
+                  <th>SEO Score</th>
+                  <th>Last Optimized</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="saved-gigs-tbody">
+                <tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Loading saved gigs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: PROPOSALS -->
+      <section id="pane-proposals" class="tab-pane">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Craft Winning Proposal</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Platform</label>
+              <select id="prop-platform" class="form-select">
+                <option value="upwork">Upwork (Visible First 200 Chars Hook)</option>
+                <option value="fiverr">Fiverr (Buyer Request / Custom Offer)</option>
+                <option value="freelancer">Freelancer.com (Bid)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Client Job Description / Brief</label>
+              <textarea id="prop-job-desc" class="form-textarea" style="min-height:160px;" placeholder="Paste the client's job posting, problem statement, or buyer request here..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Client Stated Budget / Hourly Rate (Optional)</label>
+              <input type="text" id="prop-budget" class="form-input" placeholder="e.g. $1,200 or $50/hr">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Specific Stack or Technical Approach</label>
+              <input type="text" id="prop-stack" class="form-input" placeholder="e.g. Redis queue + FastAPI with Locust benchmarks">
+            </div>
+            <button class="btn" id="btn-generate-prop" onclick="generateProposal()">
+              <span>🎯 Write Human Proposal</span>
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Proposal Output (0% AI Slop)</h2>
+              <div>
+                <button class="btn btn-secondary btn-sm" id="btn-save-prop" style="display:none;" onclick="saveCurrentProposal()">💾 Save Proposal</button>
+                <button class="btn btn-secondary btn-sm" onclick="copyText('prop-output-text')">📋 Copy</button>
+              </div>
+            </div>
+            <div class="metric-group" id="prop-metrics" style="display:none;">
+              <div class="metric-pill">
+                <span class="metric-pill-label">Human Score</span>
+                <span class="metric-pill-val" id="prop-score-val">100</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-pill-label">Words</span>
+                <span class="metric-pill-val" id="prop-words-val">--</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-pill-label">Flesch Ease</span>
+                <span class="metric-pill-val" id="prop-flesch-val">--</span>
+              </div>
+            </div>
+            <div class="form-label">Line 1 Hook Preview (Client Inbox Snippet):</div>
+            <div id="prop-hook-preview" style="background:#0d1322;padding:10px;border-radius:6px;font-size:0.82rem;color:var(--accent);margin-bottom:12px;font-family:'JetBrains Mono',monospace;">
+              Awaiting job description...
+            </div>
+            <div class="output-box" id="prop-output-text">Your tailored proposal will appear here...</div>
+          </div>
+        </div>
+
+        <!-- Cold Outreach Card -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Cold & Value-First Client Outreach</h2>
+              <div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Diagnostic script / architectural audit messages (under 140 words, zero generic greetings).</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <div class="form-group">
+                <label class="form-label">Prospect Name / Company</label>
+                <input type="text" id="outreach-prospect" class="form-input" placeholder="e.g. Acme Corp / Engineering Lead">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tech Focus / Problem Observed</label>
+                <input type="text" id="outreach-tech" class="form-input" placeholder="e.g. PostgreSQL invoice query latency / FastAPI scaling">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Channel</label>
+                <select id="outreach-channel" class="form-select">
+                  <option value="direct_message">Direct Message / LinkedIn / Twitter</option>
+                  <option value="email">Cold Email</option>
+                  <option value="upwork">Upwork Direct Outreach</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Specific Technical Observation</label>
+                <input type="text" id="outreach-obs" class="form-input" placeholder="e.g. Observed 3.4s query lag on billing export">
+              </div>
+              <button class="btn" id="btn-draft-outreach" onclick="draftOutreach()">
+                <span>⚡ Draft 82-Rule Outreach</span>
+              </button>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span class="form-label">Direct Value Message:</span>
+                <button class="btn btn-secondary btn-sm" onclick="copyText('outreach-output-text')">📋 Copy</button>
+              </div>
+              <div class="output-box" id="outreach-output-text">Fill in prospect info to draft value-first outreach...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Proposals History Table -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <h2 class="card-title">Saved Proposals History</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadSavedProposals()">🔄 Refresh List</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Job Title / Brief</th>
+                  <th>Budget</th>
+                  <th>Score</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="saved-props-tbody">
+                <tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No saved proposals yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SEO & FRESHNESS SCHEDULER -->
+      <section id="pane-seo" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Algorithmic SEO Freshness Scheduler</h2>
+              <div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Weekly search tag rotation (signals active seller status) & 14-day deep ranking audits.</div>
+            </div>
+            <button class="btn" onclick="runScheduledSEO()">⚡ Run Scheduled SEO Scan Now</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Gig Title</th>
+                  <th>Audit Type</th>
+                  <th>Score</th>
+                  <th>Previous Tags</th>
+                  <th>Recommended Fresh Tags</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="seo-audits-tbody">
+                <tr><td colspan="7" style="text-align:center;color:var(--text-dim);">Loading audits...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: CLIENT INBOX -->
+      <section id="pane-inbox" class="tab-pane">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Client Message & Negotiation Reply</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Client Name</label>
+              <input type="text" id="inbox-client-name" class="form-input" placeholder="e.g. Alex (Buyer)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service / Project Topic</label>
+              <input type="text" id="inbox-topic" class="form-input" placeholder="e.g. Custom Python Web Scraper">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Incoming Client Message</label>
+              <textarea id="inbox-client-msg" class="form-textarea" style="min-height:120px;" placeholder="Paste the client's question, pricing pushback, or timeline request..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Rate or Target Price ($)</label>
+              <input type="number" id="inbox-rate" class="form-input" value="100">
+            </div>
+            <button class="btn" id="btn-reply-inbox" onclick="replyToInbox()">
+              <span>💬 Draft Smart Reply</span>
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Drafted Human Reply</h2>
+              <button class="btn btn-secondary btn-sm" onclick="copyText('inbox-reply-text')">📋 Copy</button>
+            </div>
+            <div class="metric-group" id="inbox-metrics" style="display:none;">
+              <div class="metric-pill">
+                <span class="metric-pill-label">Detected Intent</span>
+                <span class="metric-pill-val" id="inbox-intent-val">--</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-pill-label">Recommended Action</span>
+                <span class="metric-pill-val" id="inbox-action-val">--</span>
+              </div>
+            </div>
+            <div class="output-box" id="inbox-reply-text">Awaiting incoming message...</div>
+          </div>
+        </div>
+
+        <!-- Inbox History Table -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <h2 class="card-title">Recent Conversations & Replies</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadInboxHistory()">🔄 Refresh History</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Client</th>
+                  <th>Project Topic</th>
+                  <th>Intent</th>
+                  <th>Drafted Reply</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inbox-history-tbody">
+                <tr><td colspan="7" style="text-align:center;color:var(--text-dim);">No conversation history yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: COMPETITOR RADAR -->
+      <section id="pane-competitors" class="tab-pane">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Scan Competitor Gig / Profile</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Competitor Gig or Catalog URL</label>
+              <input type="text" id="comp-url" class="form-input" placeholder="https://www.fiverr.com/top_seller/build-python-scraper">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Platform</label>
+              <select id="comp-platform" class="form-select">
+                <option value="fiverr">Fiverr</option>
+                <option value="upwork">Upwork</option>
+              </select>
+            </div>
+            <button class="btn" id="btn-scan-comp" onclick="scanCompetitor()">
+              <span>🔍 Scan & Reverse Engineer</span>
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Competitor Intelligence & Counter-Strategy</h2>
+            </div>
+            <div class="output-box" id="comp-output">Enter competitor URL to scan tags, review pain points, and extract counter-positioning angles.</div>
+          </div>
+        </div>
+
+        <!-- Competitor Scans History Table -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <h2 class="card-title">Past Competitor Scans</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadCompetitorScans()">🔄 Refresh Scans</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Competitor Name</th>
+                  <th>Gig Title</th>
+                  <th>Price Range</th>
+                  <th>Rating</th>
+                  <th>Scanned Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="competitor-scans-tbody">
+                <tr><td colspan="7" style="text-align:center;color:var(--text-dim);">No competitor scans yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- TAB 6: STORY BANK -->
+      <section id="pane-brain" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Cognitive Brain & Freelance Story Bank</h2>
+              <div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Verified project receipts, latency numbers, and case studies to prevent AI hallucination.</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="showAddReceiptModal()">➕ Add Project Receipt</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Project Title</th>
+                  <th>Client Niche</th>
+                  <th>Verified Measured Metrics</th>
+                  <th>Deliverables</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="story-bank-tbody">
+                <tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Loading receipts...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: PROFILE -->
+      <section id="pane-profile" class="tab-pane">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Freelancer Profile Optimizer</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Platform</label>
+              <select id="prof-platform" class="form-select" onchange="loadProfile()">
+                <option value="fiverr">Fiverr (Bio & Headline)</option>
+                <option value="upwork">Upwork (Overview & Title)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Primary Role / Title</label>
+              <input type="text" id="prof-role" class="form-input" value="Senior Python & Full-Stack Engineer">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Core Skills (comma-separated)</label>
+              <input type="text" id="prof-skills" class="form-input" value="Python, FastAPI, Playwright, React, Docker, PostgreSQL">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Years of Experience</label>
+              <input type="number" id="prof-years" class="form-input" value="6">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hourly Rate ($)</label>
+              <input type="number" id="prof-rate" class="form-input" value="50">
+            </div>
+            <button class="btn" id="btn-opt-profile" onclick="optimizeProfile()">
+              <span>⚡ Optimize Profile (82 Rules)</span>
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Generated Profile Overview & Headline</h2>
+              <button class="btn btn-secondary btn-sm" id="btn-save-profile" style="display:none;" onclick="saveProfile()">💾 Save Profile to DB</button>
+            </div>
+            <div class="output-box" id="prof-output">Loading profile...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: SETTINGS -->
+      <section id="pane-settings" class="tab-pane">
+        <div class="card" style="max-width:700px;">
+          <div class="card-header">
+            <h2 class="card-title">Agent Settings & Model Configuration</h2>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Active AI Provider</label>
+            <select id="setting-provider" class="form-select">
+              <option value="openrouter">OpenRouter (Free Models Chain Active)</option>
+              <option value="ollama">Ollama (100% Free Local Offline)</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic Claude</option>
+              <option value="gemini">Google Gemini</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">OpenRouter Free Model</label>
+            <select id="setting-openrouter-model" class="form-select">
+              <option value="qwen/qwen3.8-27b:free">qwen/qwen3.8-27b:free (Recommended Free)</option>
+              <option value="google/gemma-4-26b-a4b-it:free">google/gemma-4-26b-a4b-it:free</option>
+              <option value="nvidia/nemotron-3.5-lightning:free">nvidia/nemotron-3.5-lightning:free</option>
+              <option value="cohere/north-mini-code:free">cohere/north-mini-code:free</option>
+              <option value="liquid/lfm-2.5-2.6b:free">liquid/lfm-2.5-2.6b:free</option>
+              <option value="apodex/apodex-1.1-mini:free">apodex/apodex-1.1-mini:free</option>
+              <option value="thinkingmachines/inkling:free">thinkingmachines/inkling:free</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">OpenRouter API Key</label>
+            <input type="password" id="setting-api-key" class="form-input" placeholder="sk-or-v1-...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Local Ollama Model (for Offline Mode)</label>
+            <input type="text" id="setting-ollama-model" class="form-input" value="qwen3:8b">
+          </div>
+          <button class="btn" onclick="saveSettings()">
+            <span>💾 Save Settings</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Modal: Add Receipt -->
+      <div id="modal-add-receipt" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+        <div class="card" style="width:550px;max-height:90vh;overflow-y:auto;background:var(--card-bg);border:1px solid var(--accent);">
+          <div class="card-header">
+            <h2 class="card-title">Add Verified Project Receipt</h2>
+            <button class="btn btn-secondary btn-sm" onclick="closeAddReceiptModal()">✖</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <input type="text" id="rec-cat" class="form-input" placeholder="e.g. Backend & API, Web Scraping, Full Stack">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project Title</label>
+            <input type="text" id="rec-title" class="form-input" placeholder="e.g. High-Speed Order Execution Microservice">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Niche / Industry</label>
+            <input type="text" id="rec-niche" class="form-input" placeholder="e.g. Fintech / Trading">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Problem Solved</label>
+            <textarea id="rec-prob" class="form-textarea" placeholder="e.g. Checkout timeout under 45k req/min peak volume."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Solution Tech Stack</label>
+            <input type="text" id="rec-stack" class="form-input" placeholder="e.g. FastAPI, Redis pub/sub, Docker, PostgreSQL">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Verified Measured Metrics / Numbers</label>
+            <input type="text" id="rec-metrics" class="form-input" placeholder="e.g. Cut median latency from 2,400ms to 380ms. Zero timeouts.">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Delivered Artifacts</label>
+            <input type="text" id="rec-deliv" class="form-input" placeholder="e.g. Production service, Docker compose, benchmark test suite">
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;">
+            <button class="btn btn-secondary" onclick="closeAddReceiptModal()">Cancel</button>
+            <button class="btn" onclick="saveNewReceipt()">Save Receipt</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    let currentGigData = null;
+    let currentProfileData = null;
+    let currentProposalData = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('active');
+        if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(tabId)) {
+          el.classList.add('active');
+        }
+      });
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+
+      const targetPane = document.getElementById('pane-' + tabId);
+      if (targetPane) targetPane.classList.add('active');
+
+      const titles = {
+        gigs: 'Gigs & Services Studio',
+        proposals: 'Proposals & Buyer Briefs',
+        seo: 'Algorithmic SEO Freshness Scheduler',
+        inbox: 'Client Message & Negotiation Reply',
+        competitors: 'Competitor Intelligence Radar',
+        brain: 'Cognitive Brain & Freelance Story Bank',
+        profile: 'Freelancer Profile Branding',
+        settings: 'Settings & Free Model Config'
+      };
+      document.getElementById('page-title').innerText = titles[tabId] || 'FP Nexus Studio';
+
+      if (tabId === 'gigs') loadSavedGigs();
+      if (tabId === 'proposals') loadSavedProposals();
+      if (tabId === 'seo') loadSeoAudits();
+      if (tabId === 'inbox') loadInboxHistory();
+      if (tabId === 'competitors') loadCompetitorScans();
+      if (tabId === 'brain') loadStoryBank();
+      if (tabId === 'profile') loadProfile();
+      if (tabId === 'settings') loadSettings();
+    }
+
+    async function optimizeGig() {
+      const btn = document.getElementById('btn-optimize-gig');
+      btn.innerHTML = '<span class="spinner"></span> <span>Writing 82-Rule Gig...</span>';
+      btn.disabled = true;
+
+      const topic = document.getElementById('gig-topic').value;
+      const kw = document.getElementById('gig-keywords').value.split(',').map(s => s.trim()).filter(Boolean);
+      const platform = document.getElementById('gig-platform').value;
+      const category = document.getElementById('gig-category').value;
+      const custom_instructions = document.getElementById('gig-instructions').value;
+
+      try {
+        const resp = await fetch('/api/gigs/optimize', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({topic, target_keywords: kw, platform, category, custom_instructions})
+        });
+        const data = await resp.json();
+        currentGigData = data;
+
+        // Update metrics
+        document.getElementById('gig-metrics').style.display = 'flex';
+        document.getElementById('gig-seo-val').innerText = data.seo_score || 85;
+        document.getElementById('gig-rule-val').innerText = (data.humanizer_audit?.score || 100) + '/100';
+        document.getElementById('gig-flesch-val').innerText = data.flesch_score || 70;
+        document.getElementById('gig-tells-val').innerText = data.humanizer_audit?.violations?.length || 0;
+
+        // Render preview
+        let tagsHtml = (data.search_tags || []).map(t => `<span class="tag-chip">${t}</span>`).join('');
+        let html = `
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;">${data.title}</div>
+          <div style="margin-bottom:14px;">${tagsHtml}</div>
+          <div class="package-grid">
+            <div class="package-card">
+              <div class="package-tier-title">Basic</div>
+              <div class="package-price">$${data.basic_tier_price}</div>
+              <div class="package-desc">${data.basic_tier_desc}</div>
+            </div>
+            <div class="package-card">
+              <div class="package-tier-title">Standard</div>
+              <div class="package-price">$${data.standard_tier_price}</div>
+              <div class="package-desc">${data.standard_tier_desc}</div>
+            </div>
+            <div class="package-card">
+              <div class="package-tier-title">Premium</div>
+              <div class="package-price">$${data.premium_tier_price}</div>
+              <div class="package-desc">${data.premium_tier_desc}</div>
+            </div>
+          </div>
+          <div class="form-label" style="margin-top:14px;">Gig Description:</div>
+          <div class="output-box">${data.description}</div>
+        `;
+        document.getElementById('gig-preview-container').innerHTML = html;
+        document.getElementById('btn-save-gig').style.display = 'inline-flex';
+      } catch (err) {
+        alert('Error optimizing gig: ' + err);
+      } finally {
+        btn.innerHTML = '<span>🚀 Generate 82-Rule Gig</span>';
+        btn.disabled = false;
+      }
+    }
+
+    async function saveCurrentGig() {
+      if (!currentGigData) return;
+      try {
+        const resp = await fetch('/api/gigs/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(currentGigData)
+        });
+        const res = await resp.json();
+        alert('Gig saved to database! ID: ' + res.gig_id);
+        loadSavedGigs();
+      } catch (e) {
+        alert('Failed to save gig: ' + e);
+      }
+    }
+
+    async function loadSavedGigs() {
+      try {
+        const resp = await fetch('/api/gigs/');
+        const data = await resp.json();
+        const tbody = document.getElementById('saved-gigs-tbody');
+        if (!data.gigs || data.gigs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No saved gigs yet. Generate and save a gig above!</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.gigs.map(g => `
+          <tr>
+            <td><span class="tag-chip">${g.platform.toUpperCase()}</span></td>
+            <td style="font-weight:600;color:var(--text);">${g.title}</td>
+            <td>${(g.search_tags || []).slice(0,3).map(t => `<span class="tag-chip">${t}</span>`).join('')}</td>
+            <td><span class="status-badge ${g.seo_score >= 80 ? 'status-pass' : 'status-warning'}">${g.seo_score}/100</span></td>
+            <td>${g.last_optimized_at || g.created_at}</td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="auditGig(${g.id})">🔍 Audit SEO</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteGig(${g.id})">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function deleteGig(id) {
+      if (!confirm('Are you sure you want to delete gig #' + id + '?')) return;
+      await fetch('/api/gigs/' + id, {method: 'DELETE'});
+      loadSavedGigs();
+    }
+
+    async function auditGig(id) {
+      const resp = await fetch('/api/gigs/' + id + '/audit', {method: 'POST'});
+      const data = await resp.json();
+      alert(`SEO Score: ${data.seo_score}/100\nRecommendations:\n${(data.recommendations || []).join('\n')}`);
+      loadSavedGigs();
+    }
+
+    async function generateProposal() {
+      const btn = document.getElementById('btn-generate-prop');
+      btn.innerHTML = '<span class="spinner"></span> Writing Proposal...';
+      btn.disabled = true;
+
+      const desc = document.getElementById('prop-job-desc').value;
+      const budget = document.getElementById('prop-budget').value;
+      const platform = document.getElementById('prop-platform').value;
+      const stack = document.getElementById('prop-stack').value;
+
+      try {
+        const resp = await fetch('/api/proposals/generate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            job_description: desc,
+            client_budget: budget,
+            platform,
+            specific_stack_or_approach: stack
+          })
+        });
+        const data = await resp.json();
+        currentProposalData = {
+          platform,
+          job_title: desc.slice(0, 60).split('\n')[0] || "Client Project",
+          job_description: desc,
+          client_budget: budget,
+          proposal_text: data.proposal_text,
+          humanizer_score: data.humanizer_audit?.score || 100.0
+        };
+
+        document.getElementById('prop-metrics').style.display = 'flex';
+        document.getElementById('prop-score-val').innerText = (data.humanizer_audit?.score || 100) + '/100';
+        document.getElementById('prop-words-val').innerText = data.word_count || '--';
+        document.getElementById('prop-flesch-val').innerText = data.flesch_score || '--';
+
+        document.getElementById('prop-hook-preview').innerText = data.preview_hook || '';
+        document.getElementById('prop-output-text').innerText = data.proposal_text || '';
+        document.getElementById('btn-save-prop').style.display = 'inline-flex';
+      } catch (e) {
+        alert('Proposal generation failed: ' + e);
+      } finally {
+        btn.innerHTML = '<span>🎯 Write Human Proposal</span>';
+        btn.disabled = false;
+      }
+    }
+
+    async function saveCurrentProposal() {
+      if (!currentProposalData) return;
+      try {
+        const resp = await fetch('/api/proposals/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(currentProposalData)
+        });
+        const res = await resp.json();
+        alert('Proposal saved to history! ID: ' + res.proposal_id);
+        loadSavedProposals();
+      } catch (e) {
+        alert('Failed to save proposal: ' + e);
+      }
+    }
+
+    window._proposalsCache = {};
+    window._inboxCache = {};
+
+    function copyProposalById(id) {
+      const txt = window._proposalsCache[id] || '';
+      navigator.clipboard.writeText(txt);
+      alert('Proposal copied!');
+    }
+
+    function copyInboxReplyById(id) {
+      const txt = window._inboxCache[id] || '';
+      navigator.clipboard.writeText(txt);
+      alert('Reply copied!');
+    }
+
+    async function loadSavedProposals() {
+      try {
+        const resp = await fetch('/api/proposals/');
+        const data = await resp.json();
+        const tbody = document.getElementById('saved-props-tbody');
+        if (!data.proposals || data.proposals.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No saved proposals yet.</td></tr>';
+          return;
+        }
+        window._proposalsCache = {};
+        data.proposals.forEach(p => { window._proposalsCache[p.id] = p.proposal_text || ''; });
+        tbody.innerHTML = data.proposals.map(p => `
+          <tr>
+            <td><span class="tag-chip">${p.platform.toUpperCase()}</span></td>
+            <td style="font-weight:600;color:var(--text);">${p.job_title || 'Client Job'}</td>
+            <td>${p.client_budget || 'Unspecified'}</td>
+            <td><span class="status-badge status-pass">${p.humanizer_score || 100}/100</span></td>
+            <td>${p.created_at}</td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="copyProposalById(${p.id})">📋 Copy</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteProposal(${p.id})">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function deleteProposal(id) {
+      if (!confirm('Are you sure you want to delete proposal #' + id + '?')) return;
+      await fetch('/api/proposals/' + id, {method: 'DELETE'});
+      loadSavedProposals();
+    }
+
+    async function draftOutreach() {
+      const btn = document.getElementById('btn-draft-outreach');
+      btn.innerHTML = '<span class="spinner"></span> Drafting...';
+      btn.disabled = true;
+
+      const prospect = document.getElementById('outreach-prospect').value;
+      const tech = document.getElementById('outreach-tech').value;
+      const channel = document.getElementById('outreach-channel').value;
+      const obs = document.getElementById('outreach-obs').value;
+
+      try {
+        const resp = await fetch('/api/proposals/outreach', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            prospect_name_or_company: prospect,
+            prospect_problem_or_tech: tech,
+            outreach_channel: channel,
+            specific_observation: obs
+          })
+        });
+        const data = await resp.json();
+        document.getElementById('outreach-output-text').innerText = data.outreach_text || '';
+      } catch (e) {
+        alert('Outreach generation failed: ' + e);
+      } finally {
+        btn.innerHTML = '<span>⚡ Draft 82-Rule Outreach</span>';
+        btn.disabled = false;
+      }
+    }
+
+    async function runScheduledSEO() {
+      const resp = await fetch('/api/seo/run-scheduled', {method: 'POST'});
+      const data = await resp.json();
+      alert(`Scheduled SEO check complete! Processed ${data.processed_count} gigs.`);
+      loadSeoAudits();
+    }
+
+    async function loadSeoAudits() {
+      const resp = await fetch('/api/seo/audits');
+      const data = await resp.json();
+      const tbody = document.getElementById('seo-audits-tbody');
+      if (!data.audits || data.audits.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);">No audits recorded yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.audits.map(a => `
+        <tr>
+          <td style="font-weight:600;color:var(--text);">${a.gig_title}</td>
+          <td><span class="tag-chip">${a.audit_type}</span></td>
+          <td><span class="status-badge ${a.score >= 80 ? 'status-pass' : 'status-warning'}">${a.score}/100</span></td>
+          <td style="font-size:0.78rem;">${a.previous_tags || '--'}</td>
+          <td style="color:var(--accent);font-weight:600;font-size:0.8rem;">${a.recommended_tags || '--'}</td>
+          <td>${a.created_at}</td>
+          <td><button class="btn btn-outline" style="padding:0.2rem 0.5rem;font-size:0.75rem;color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="deleteSeoAudit(${a.id})">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function deleteSeoAudit(id) {
+      if (!confirm('Are you sure you want to delete this SEO audit?')) return;
+      try {
+        const resp = await fetch(`/api/seo/audits/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+          loadSeoAudits();
+        } else {
+          alert('Failed to delete audit.');
+        }
+      } catch (e) {
+        alert('Network error deleting audit.');
+      }
+    }
+
+    async function replyToInbox() {
+      const btn = document.getElementById('btn-reply-inbox');
+      if (btn) {
+        btn.innerHTML = '<span class="spinner"></span> Drafting...';
+        btn.disabled = true;
+      }
+      const msg = document.getElementById('inbox-client-msg').value;
+      const topic = document.getElementById('inbox-topic').value;
+      const rate = document.getElementById('inbox-rate').value;
+      const name = document.getElementById('inbox-client-name').value;
+
+      try {
+        const resp = await fetch('/api/inbox/reply', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            client_message: msg,
+            gig_or_project_name: topic,
+            freelancer_rate: parseFloat(rate) || 50.0,
+            client_name: name
+          })
+        });
+        const data = await resp.json();
+        document.getElementById('inbox-metrics').style.display = 'flex';
+        document.getElementById('inbox-intent-val').innerText = data.detected_intent || 'general';
+        document.getElementById('inbox-action-val').innerText = data.recommended_action || 'reply';
+        document.getElementById('inbox-reply-text').innerText = data.reply_text || '';
+        loadInboxHistory();
+      } catch (e) {
+        alert('Inbox reply generation failed: ' + e);
+      } finally {
+        if (btn) {
+          btn.innerHTML = '<span>💬 Draft Smart Reply</span>';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    async function loadInboxHistory() {
+      try {
+        const resp = await fetch('/api/inbox/history');
+        const data = await resp.json();
+        const tbody = document.getElementById('inbox-history-tbody');
+        if (!data.conversations || data.conversations.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);">No conversation history yet.</td></tr>';
+          return;
+        }
+        window._inboxCache = {};
+        data.conversations.forEach(c => { window._inboxCache[c.id] = c.drafted_reply || ''; });
+        tbody.innerHTML = data.conversations.map(c => `
+          <tr>
+            <td><span class="tag-chip">${(c.platform || 'fiverr').toUpperCase()}</span></td>
+            <td style="font-weight:600;color:var(--text);">${c.client_name || 'Buyer'}</td>
+            <td>${c.project_topic || 'Project'}</td>
+            <td><span class="status-badge status-pass">${c.detected_intent}</span></td>
+            <td style="font-size:0.8rem;">${(c.drafted_reply || '').slice(0, 60)}...</td>
+            <td>${c.created_at}</td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="copyInboxReplyById(${c.id})">📋 Copy</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteInboxConv(${c.id})">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function deleteInboxConv(id) {
+      if (!confirm('Are you sure you want to delete conversation #' + id + '?')) return;
+      await fetch('/api/inbox/' + id, {method: 'DELETE'});
+      loadInboxHistory();
+    }
+
+    async function scanCompetitor() {
+      const btn = document.getElementById('btn-scan-comp');
+      btn.innerHTML = '<span class="spinner"></span> Scanning...';
+      btn.disabled = true;
+
+      const url = document.getElementById('comp-url').value;
+      const platform = document.getElementById('comp-platform').value;
+
+      try {
+        const resp = await fetch('/api/competitors/scan', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url, platform})
+        });
+        const data = await resp.json();
+        if (!resp.ok || data.status === 'error' || data.detail) {
+          alert('Scan failed: ' + (data.detail || data.error || 'Failed to scan competitor'));
+          return;
+        }
+        document.getElementById('comp-output').innerHTML = `
+          <b>Competitor:</b> ${data.competitor_name || 'Unknown'} (${data.price_range || 'N/A'})<br>
+          <b>Title:</b> ${data.gig_title || 'N/A'}<br>
+          <b>Extracted Tags:</b> ${Array.isArray(data.extracted_tags) ? data.extracted_tags.join(', ') : (data.extracted_tags || 'None')}<br><br>
+          <b>Buyer Gaps / Weaknesses:</b><br>${data.buyer_pain_points_or_gaps || 'None observed.'}<br><br>
+          <b>Recommended Counter-Strategy:</b><br><span style="color:var(--accent);font-weight:600;">${data.counter_strategy || 'N/A'}</span>
+        `;
+        loadCompetitorScans();
+      } catch (e) {
+        alert('Scan error: ' + e);
+      } finally {
+        btn.innerHTML = '<span>🔍 Scan & Reverse Engineer</span>';
+        btn.disabled = false;
+      }
+    }
+
+    async function loadCompetitorScans() {
+      try {
+        const resp = await fetch('/api/competitors/');
+        const data = await resp.json();
+        const tbody = document.getElementById('competitor-scans-tbody');
+        if (!data.scans || data.scans.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);">No competitor scans yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.scans.map(s => `
+          <tr>
+            <td><span class="tag-chip">${(s.platform || 'fiverr').toUpperCase()}</span></td>
+            <td style="font-weight:600;color:var(--text);">${s.competitor_name || 'Competitor'}</td>
+            <td>${s.gig_title}</td>
+            <td style="color:var(--accent);font-weight:600;">${s.price_range}</td>
+            <td>${s.rating || 5.0}★ (${s.review_count || 0})</td>
+            <td>${s.scanned_at}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="deleteCompetitorScan(${s.id})">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function deleteCompetitorScan(id) {
+      if (!confirm('Are you sure you want to delete competitor scan #' + id + '?')) return;
+      await fetch('/api/competitors/' + id, {method: 'DELETE'});
+      loadCompetitorScans();
+    }
+
+    function showAddReceiptModal() {
+      document.getElementById('modal-add-receipt').style.display = 'flex';
+    }
+
+    function closeAddReceiptModal() {
+      document.getElementById('modal-add-receipt').style.display = 'none';
+    }
+
+    async function saveNewReceipt() {
+      const payload = {
+        category: document.getElementById('rec-cat').value || 'Backend',
+        title: document.getElementById('rec-title').value,
+        client_niche: document.getElementById('rec-niche').value || 'Tech',
+        problem: document.getElementById('rec-prob').value,
+        solution_stack: document.getElementById('rec-stack').value,
+        verified_metrics: document.getElementById('rec-metrics').value,
+        deliverables: document.getElementById('rec-deliv').value
+      };
+      if (!payload.title || !payload.verified_metrics) {
+        alert('Please provide at least a project title and verified measured metrics.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/brain/receipts', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const res = await resp.json();
+        alert('Receipt added to Story Bank! ID: ' + res.receipt_id);
+        closeAddReceiptModal();
+        loadStoryBank();
+      } catch (e) {
+        alert('Failed to add receipt: ' + e);
+      }
+    }
+
+    async function deleteReceipt(id) {
+      if (!confirm('Are you sure you want to remove receipt #' + id + '?')) return;
+      await fetch('/api/brain/receipts/' + id, {method: 'DELETE'});
+      loadStoryBank();
+    }
+
+    async function loadStoryBank() {
+      const resp = await fetch('/api/brain/receipts');
+      const data = await resp.json();
+      const tbody = document.getElementById('story-bank-tbody');
+      tbody.innerHTML = data.receipts.map(r => `
+        <tr>
+          <td><span class="tag-chip">${r.category}</span></td>
+          <td style="font-weight:600;color:var(--text);">${r.title}</td>
+          <td>${r.client_niche}</td>
+          <td style="color:var(--accent);font-weight:500;">${r.verified_metrics}</td>
+          <td style="font-size:0.8rem;">${r.deliverables}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteReceipt(${r.id})">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadProfile() {
+      const platform = document.getElementById('prof-platform')?.value || 'fiverr';
+      try {
+        const resp = await fetch('/api/profile/?platform=' + platform);
+        const data = await resp.json();
+        const p = data.profile;
+        if (p) {
+          if (p.title_headline) document.getElementById('prof-role').value = p.title_headline;
+          if (p.skills) document.getElementById('prof-skills').value = Array.isArray(p.skills) ? p.skills.join(', ') : p.skills;
+          if (p.hourly_rate) document.getElementById('prof-rate').value = p.hourly_rate;
+          document.getElementById('prof-output').innerHTML = `
+            <b>Headline:</b> ${p.title_headline || 'Not set'}<br><br>
+            <b>Bio Description:</b><br>${p.bio_description || 'No bio configured yet.'}
+          `;
+          currentProfileData = p;
+        }
+      } catch (e) {
+        console.error('Error loading profile:', e);
+      }
+    }
+
+    async function optimizeProfile() {
+      const btn = document.getElementById('btn-opt-profile');
+      btn.innerHTML = '<span class="spinner"></span> Optimizing...';
+      btn.disabled = true;
+
+      const role = document.getElementById('prof-role').value;
+      const skills = document.getElementById('prof-skills').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const years = parseInt(document.getElementById('prof-years').value);
+      const platform = document.getElementById('prof-platform').value;
+
+      try {
+        const resp = await fetch('/api/profile/optimize', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({primary_role: role, core_skills: skills, years_experience: years, platform})
+        });
+        const data = await resp.json();
+        currentProfileData = {
+          platform,
+          title_headline: data.headline,
+          bio_description: data.bio_summary,
+          skills: data.recommended_skills || skills,
+          hourly_rate: parseFloat(document.getElementById('prof-rate').value) || 50.0
+        };
+        document.getElementById('prof-output').innerHTML = `
+          <b>Headline:</b> ${data.headline}<br><br>
+          <b>Bio Description:</b><br>${data.bio_summary}
+        `;
+        document.getElementById('btn-save-profile').style.display = 'inline-flex';
+      } catch (e) {
+        alert('Profile optimization failed: ' + e);
+      } finally {
+        btn.innerHTML = '<span>⚡ Optimize Profile (82 Rules)</span>';
+        btn.disabled = false;
+      }
+    }
+
+    async function saveProfile() {
+      if (!currentProfileData) return;
+      try {
+        const resp = await fetch('/api/profile/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(currentProfileData)
+        });
+        const res = await resp.json();
+        alert('Profile saved to database successfully!');
+      } catch (e) {
+        alert('Failed to save profile: ' + e);
+      }
+    }
+
+    async function loadSettings() {
+      const resp = await fetch('/api/settings/');
+      const data = await resp.json();
+      const s = data.settings || {};
+
+      if (Array.isArray(data.free_models) && data.free_models.length > 0) {
+        const modelSelect = document.getElementById('setting-openrouter-model');
+        const prevVal = s.OPENROUTER_MODEL || modelSelect.value;
+        modelSelect.innerHTML = data.free_models.map(m => `<option value="${m}">${m}${m === 'qwen/qwen3.8-27b:free' ? ' (Recommended Free)' : ''}</option>`).join('');
+        if (data.free_models.includes(prevVal)) {
+          modelSelect.value = prevVal;
+        }
+      }
+
+      if (s.LLM_PROVIDER) document.getElementById('setting-provider').value = s.LLM_PROVIDER;
+      if (s.OPENROUTER_MODEL) document.getElementById('setting-openrouter-model').value = s.OPENROUTER_MODEL;
+      if (s.OLLAMA_MODEL) document.getElementById('setting-ollama-model').value = s.OLLAMA_MODEL;
+      if (data.masked_api_key) document.getElementById('setting-api-key').placeholder = data.masked_api_key;
+
+      const prov = s.LLM_PROVIDER || 'openrouter';
+      const mod = prov === 'ollama' ? (s.OLLAMA_MODEL || 'llama3.2') : (s.OPENROUTER_MODEL || 'qwen/qwen3.8-27b:free');
+      document.getElementById('active-model-display').innerText = `${prov.toUpperCase()}: ${mod}`;
+    }
+
+    async function saveSettings() {
+      const provider = document.getElementById('setting-provider').value;
+      const openrouter_model = document.getElementById('setting-openrouter-model').value;
+      const api_key = document.getElementById('setting-api-key').value;
+      const ollama_model = document.getElementById('setting-ollama-model').value;
+
+      const payload = {
+        LLM_PROVIDER: provider,
+        OPENROUTER_MODEL: openrouter_model,
+        OLLAMA_MODEL: ollama_model
+      };
+      if (api_key) payload.OPENROUTER_API_KEY = api_key;
+
+      await fetch('/api/settings/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      document.getElementById('setting-api-key').value = '';
+      alert('Settings saved successfully!');
+      loadSettings();
+    }
+
+    function copyText(elemId) {
+      const text = document.getElementById(elemId).innerText;
+      navigator.clipboard.writeText(text);
+      alert('Copied to clipboard!');
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedGigs();
+      loadSettings();
+    });
+
+  </script>
+</body>
+</html>
