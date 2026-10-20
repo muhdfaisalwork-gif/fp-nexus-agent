@@ -126,3 +126,16 @@ def test_proposal_writer_null_inputs():
     res = writer.draft_proposal(job_description=None, platform_name="upwork")
     assert "proposal_text" in res
     assert res["platform"] == "upwork"
+
+
+def test_run_banner_utf8_safety(capsys):
+    """Verify run.py print_banner prints Unicode symbols cleanly without UnicodeEncodeError."""
+    from run import print_banner
+    mock_llm = MagicMock(spec=UniversalLLMClient)
+    mock_llm.active_provider_name = "openrouter"
+    mock_llm.current_model = "qwen/qwen3.8-27b:free"
+    print_banner("0.0.0.0", 8001, mock_llm)
+    captured = capsys.readouterr()
+    assert "FP NEXUS AGENT" in captured.out
+    assert "http://localhost:8001" in captured.out
+

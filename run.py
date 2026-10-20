@@ -10,6 +10,18 @@ import sys
 import uvicorn
 from dotenv import load_dotenv
 
+# Ensure UTF-8 console output on Windows (prevents cp1252 UnicodeEncodeError on banner symbols)
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 load_dotenv()
 
 # Ensure project root is in sys.path
