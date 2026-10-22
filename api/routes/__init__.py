@@ -6,6 +6,7 @@ from .competitors import router as competitors_router
 from .brain import router as brain_router
 from .profile import router as profile_router
 from .settings import router as settings_router
+from .reach import router as reach_router
 
 __all__ = [
     "gigs_router",
@@ -15,5 +16,6 @@ __all__ = [
     "competitors_router",
     "brain_router",
     "profile_router",
-    "settings_router"
+    "settings_router",
+    "reach_router"
 ]

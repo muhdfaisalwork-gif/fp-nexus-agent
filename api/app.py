@@ -12,7 +12,8 @@ from .routes import (
     competitors_router,
     brain_router,
     profile_router,
-    settings_router
+    settings_router,
+    reach_router
 )
 
 app = FastAPI(
@@ -46,6 +47,7 @@ app.include_router(competitors_router, prefix="/api/competitors", tags=["Competi
 app.include_router(brain_router, prefix="/api/brain", tags=["Brain"])
 app.include_router(profile_router, prefix="/api/profile", tags=["Profile"])
 app.include_router(settings_router, prefix="/api/settings", tags=["Settings"])
+app.include_router(reach_router, prefix="/api/reach", tags=["Reach"])
 
 # Mount static frontend
 static_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")

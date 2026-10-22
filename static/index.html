@@ -398,6 +398,9 @@
       <div class="nav-item" onclick="switchTab('competitors')">
         <span>🔍 Competitor Radar</span>
       </div>
+      <div class="nav-item" onclick="switchTab('reach')">
+        <span>📡 Agent Reach & Feed</span>
+      </div>
       <div class="nav-item" onclick="switchTab('brain')">
         <span>🧠 Story Bank & Proof</span>
       </div>
@@ -817,6 +820,68 @@
         </div>
       </section>
 
+      <!-- TAB: AGENT REACH & FEED -->
+      <section id="pane-reach" class="tab-pane">
+        <div class="grid-2">
+          <!-- Inspect URL & Ground in Brain -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Inspect Listing & Ground in Brain</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job Post / Buyer Request / Gig URL</label>
+              <input type="text" id="reach-url" class="form-input" placeholder="https://www.upwork.com/jobs/... or https://www.fiverr.com/...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Platform</label>
+              <select id="reach-platform" class="form-select">
+                <option value="upwork">Upwork</option>
+                <option value="fiverr">Fiverr</option>
+                <option value="freelancer">Freelancer</option>
+              </select>
+            </div>
+            <button class="btn" id="btn-reach-inspect" onclick="inspectReachUrl()">
+              <span>📡 Inspect & Synthesize Brain Angle</span>
+            </button>
+          </div>
+
+          <!-- Brain Strategic Breakdown Output -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Brain-Grounded Strategic Angle</h2>
+            </div>
+            <div class="output-box" id="reach-strategy-output">Enter any freelance listing URL to inspect and generate a Humanizer-compliant winning angle grounded in your Story Bank receipts.</div>
+          </div>
+        </div>
+
+        <!-- Live Reach Opportunity Feed -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Active Reach Opportunity Feed</h2>
+              <div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Discovered freelance jobs, buyer briefs, and scanned marketplace opportunities.</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadReachFeed()">🔄 Refresh Feed</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Title / Source</th>
+                  <th>Summary & Angle</th>
+                  <th>Tags / Budget</th>
+                  <th>Scanned Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="reach-feed-tbody">
+                <tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No opportunities in feed yet. Inspect a URL or scan above to populate!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       <!-- TAB 6: STORY BANK -->
       <section id="pane-brain" class="tab-pane">
@@ -895,6 +960,52 @@
 
       <!-- TAB 8: SETTINGS -->
       <section id="pane-settings" class="tab-pane">
+        <div class="card" style="max-width:700px;margin-bottom:24px;">
+          <div class="card-header">
+            <h2 class="card-title">Account Connection & Playwright Session</h2>
+            <span id="playwright-status-badge" class="brand-badge">Checking...</span>
+          </div>
+          <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+            Connect your Fiverr or Upwork account securely to enable real-time feed inspection, buyer request monitoring, and automated session operations without API rate limits.
+          </div>
+          
+          <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <!-- Fiverr Connection Box -->
+            <div style="background:#0d1322;border:1px solid var(--card-border);border-radius:8px;padding:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:700;color:var(--text);">Fiverr Account</span>
+                <span id="status-fiverr" class="tag-chip" style="margin:0;">Checking...</span>
+              </div>
+              <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">Session Cookie (_fiverr_session)</label>
+                <input type="password" id="cookie-fiverr" class="form-input" placeholder="Paste _fiverr_session cookie">
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm" onclick="savePlatformCookie('fiverr')">Attach Cookie</button>
+                <button class="btn btn-secondary btn-sm" onclick="launchBrowserLogin('fiverr')">Browser Login</button>
+                <button class="btn btn-danger btn-sm" onclick="disconnectPlatform('fiverr')">Disconnect</button>
+              </div>
+            </div>
+
+            <!-- Upwork Connection Box -->
+            <div style="background:#0d1322;border:1px solid var(--card-border);border-radius:8px;padding:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:700;color:var(--text);">Upwork Account</span>
+                <span id="status-upwork" class="tag-chip" style="margin:0;">Checking...</span>
+              </div>
+              <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">Session Token (master / oauth)</label>
+                <input type="password" id="cookie-upwork" class="form-input" placeholder="Paste session token">
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm" onclick="savePlatformCookie('upwork')">Attach Cookie</button>
+                <button class="btn btn-secondary btn-sm" onclick="launchBrowserLogin('upwork')">Browser Login</button>
+                <button class="btn btn-danger btn-sm" onclick="disconnectPlatform('upwork')">Disconnect</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="card" style="max-width:700px;">
           <div class="card-header">
             <h2 class="card-title">Agent Settings & Model Configuration</h2>
@@ -1003,6 +1114,7 @@
         seo: 'Algorithmic SEO Freshness Scheduler',
         inbox: 'Client Message & Negotiation Reply',
         competitors: 'Competitor Intelligence Radar',
+        reach: 'Agent Reach & Opportunity Feed',
         brain: 'Cognitive Brain & Freelance Story Bank',
         profile: 'Freelancer Profile Branding',
         settings: 'Settings & Free Model Config'
@@ -1644,6 +1756,204 @@
       loadSettings();
     }
 
+    async function loadAccountStatus() {
+      try {
+        const resp = await fetch('/api/reach/status');
+        const data = await resp.json();
+        
+        // Playwright status
+        const pwBadge = document.getElementById('playwright-status-badge');
+        if (pwBadge) {
+          if (data.playwright_ready) {
+            pwBadge.innerText = 'PLAYWRIGHT ACTIVE';
+            pwBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+            pwBadge.style.color = 'var(--accent)';
+          } else {
+            pwBadge.innerText = 'PLAYWRIGHT MISSING';
+            pwBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+            pwBadge.style.color = 'var(--danger)';
+          }
+        }
+
+        // Fiverr status
+        const fivBadge = document.getElementById('status-fiverr');
+        if (fivBadge) {
+          if (data.fiverr_connected) {
+            fivBadge.innerText = 'CONNECTED';
+            fivBadge.className = 'status-badge status-pass';
+          } else {
+            fivBadge.innerText = 'DISCONNECTED';
+            fivBadge.className = 'status-badge status-warning';
+          }
+        }
+
+        // Upwork status
+        const upwBadge = document.getElementById('status-upwork');
+        if (upwBadge) {
+          if (data.upwork_connected) {
+            upwBadge.innerText = 'CONNECTED';
+            upwBadge.className = 'status-badge status-pass';
+          } else {
+            upwBadge.innerText = 'DISCONNECTED';
+            upwBadge.className = 'status-badge status-warning';
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load account status', e);
+      }
+    }
+
+    async function savePlatformCookie(platform) {
+      const input = document.getElementById('cookie-' + platform);
+      const val = (input ? input.value : '').trim();
+      if (!val) {
+        alert('Please paste the session cookie first.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/reach/connect-cookie', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({cookie: val, platform})
+        });
+        const res = await resp.json();
+        alert(res.message);
+        if (input) input.value = '';
+        loadAccountStatus();
+      } catch (e) {
+        alert('Connection error: ' + e);
+      }
+    }
+
+    async function launchBrowserLogin(platform) {
+      alert(`Launching interactive browser window to log in to ${platform.toUpperCase()}. Please complete login in the opened browser window.`);
+      try {
+        const resp = await fetch('/api/reach/connect-browser', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({platform})
+        });
+        const res = await resp.json();
+        alert(res.message);
+        loadAccountStatus();
+      } catch (e) {
+        alert('Browser login error: ' + e);
+      }
+    }
+
+    async function disconnectPlatform(platform) {
+      if (!confirm(`Are you sure you want to disconnect ${platform.toUpperCase()}?`)) return;
+      try {
+        const resp = await fetch('/api/reach/disconnect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({platform})
+        });
+        const res = await resp.json();
+        alert(res.message);
+        loadAccountStatus();
+      } catch (e) {
+        alert('Disconnect error: ' + e);
+      }
+    }
+
+    async function inspectReachUrl() {
+      const btn = document.getElementById('btn-reach-inspect');
+      btn.innerHTML = '<span class="spinner"></span> Inspecting & Synthesizing...';
+      btn.disabled = true;
+
+      const url = document.getElementById('reach-url').value;
+      const platform = document.getElementById('reach-platform').value;
+
+      try {
+        const resp = await fetch('/api/reach/inspect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url, platform})
+        });
+        const data = await resp.json();
+
+        if (data.status === 'success') {
+          const s = data.strategy || {};
+          let html = `
+            <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:8px;">${data.title}</div>
+            <div style="font-size:0.75rem;color:var(--accent);margin-bottom:12px;">INSPECTED VIA ${data.backend || 'READER'}</div>
+
+            <div style="margin-bottom:12px;">
+              <span class="tag-chip">EXECUTIVE SUMMARY</span>
+              <div style="font-size:0.88rem;color:var(--text);margin-top:4px;">${s.executive_summary || 'N/A'}</div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <span class="tag-chip" style="color:#ef4444;border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.1);">CRITICAL BUYER PAIN POINT</span>
+              <div style="font-size:0.88rem;color:var(--text);margin-top:4px;">${s.buyer_pain_point || 'N/A'}</div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <span class="tag-chip">🧠 VERIFIED BRAIN PROOF TO CITE</span>
+              <div style="font-size:0.88rem;color:var(--accent);margin-top:4px;font-family:'JetBrains Mono',monospace;">${s.brain_proof_citation || 'N/A'}</div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <span class="tag-chip">🎯 RECOMMENDED 1-SENTENCE HOOK</span>
+              <div style="font-size:0.9rem;font-weight:600;color:var(--text);margin-top:4px;padding:8px 12px;background:#0d1322;border-radius:6px;border-left:3px solid var(--accent);">${s.recommended_hook || 'N/A'}</div>
+            </div>
+
+            <div>
+              <span class="tag-chip">WINNING ANGLE</span>
+              <div style="font-size:0.88rem;color:var(--text-muted);margin-top:4px;">${s.winning_angle || 'N/A'}</div>
+            </div>
+          `;
+          document.getElementById('reach-strategy-output').innerHTML = html;
+          loadReachFeed();
+        } else {
+          document.getElementById('reach-strategy-output').innerText = 'Inspection failed: ' + (data.detail || data.message || 'Unknown error');
+        }
+      } catch (e) {
+        alert('Inspection request error: ' + e);
+      } finally {
+        btn.innerHTML = '<span>📡 Inspect & Synthesize Brain Angle</span>';
+        btn.disabled = false;
+      }
+    }
+
+    async function loadReachFeed() {
+      try {
+        const resp = await fetch('/api/reach/feed');
+        const data = await resp.json();
+        const tbody = document.getElementById('reach-feed-tbody');
+        if (!data.posts || data.posts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No opportunities in feed yet. Inspect a URL above to populate!</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.posts.map(p => `
+          <tr>
+            <td><span class="tag-chip">${(p.platform || 'fiverr').toUpperCase()}</span></td>
+            <td style="font-weight:600;color:var(--text);max-width:220px;">
+              ${p.post_url ? `<a href="${p.post_url}" target="_blank" style="color:var(--text);text-decoration:none;">${p.author_name || 'Listing'} ↗</a>` : (p.author_name || 'Listing')}
+            </td>
+            <td style="font-size:0.84rem;color:var(--text-muted);max-width:320px;">${p.post_text ? p.post_text.slice(0, 150) + (p.post_text.length > 150 ? '...' : '') : 'N/A'}</td>
+            <td><span class="tag-chip">${p.tags || p.platform || 'fiverr'}</span></td>
+            <td style="font-size:0.75rem;color:var(--text-dim);">${p.scanned_at || ''}</td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="populateProposalFromFeed('${encodeURIComponent(p.post_text || '')}', '${p.platform || 'upwork'}')">Draft Proposal</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load feed', e);
+      }
+    }
+
+    function populateProposalFromFeed(encodedText, platform) {
+      const text = decodeURIComponent(encodedText);
+      switchTab('proposals');
+      document.getElementById('prop-job-desc').value = text;
+      if (document.getElementById('prop-platform')) {
+        document.getElementById('prop-platform').value = platform;
+      }
+    }
+
     function copyText(elemId) {
       const text = document.getElementById(elemId).innerText;
       navigator.clipboard.writeText(text);
@@ -1654,6 +1964,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedGigs();
       loadSettings();
+      loadAccountStatus();
+      loadReachFeed();
     });
 
   </script>

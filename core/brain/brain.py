@@ -113,3 +113,8 @@ class BrainManager:
                 f"   Deliverables: {r['deliverables']}"
             )
         return "\n".join(lines)
+
+    def get_context_for_generation(self, query: str = "", category: str = "", limit: int = 4) -> str:
+        """Retrieves and formats receipts ready for prompt injection."""
+        receipts = self.get_receipts(query=query, category=category, limit=limit)
+        return self.format_receipts_for_prompt(receipts)

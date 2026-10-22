@@ -158,6 +158,24 @@ def _init_tables(conn):
         )
     ''')
 
+    # 9. Scanned Feed Posts / Jobs (Reach Feed)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS scanned_feed_posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            platform TEXT DEFAULT 'fiverr',
+            author_name TEXT,
+            author_headline TEXT,
+            post_text TEXT,
+            post_url TEXT,
+            budget TEXT,
+            tags TEXT,
+            reaction_count INTEGER DEFAULT 0,
+            comment_count INTEGER DEFAULT 0,
+            screenshot_path TEXT,
+            scanned_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # Seed default settings if empty
     default_settings = [
         ("LLM_PROVIDER", "openrouter"),
