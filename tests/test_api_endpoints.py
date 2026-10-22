@@ -111,21 +111,23 @@ def test_api_proposals_save_list():
     assert any(p["id"] == prop_id for p in props)
 
 def test_api_seo_endpoints():
+    from unittest.mock import patch
     audits_res = client.get("/api/seo/audits")
     assert audits_res.status_code == 200
     assert "audits" in audits_res.json()
 
-    refresh_res = client.post("/api/seo/weekly-refresh", json={
-        "current_tags": ["python", "scraper", "automation", "api", "bots"],
-        "gig_title": "I will build custom python scrapers and web automations",
-        "gig_category": "Data & Scraping"
-    })
-    assert refresh_res.status_code == 200
-    assert "recommended_tags" in refresh_res.json()
+    with patch("core.llm.client.UniversalLLMClient.generate", return_value="python-bot, web-scraper, playwright-api, automation-tool, fast-scraper"):
+        refresh_res = client.post("/api/seo/weekly-refresh", json={
+            "current_tags": ["python", "scraper", "automation", "api", "bots"],
+            "gig_title": "I will build custom python scrapers and web automations",
+            "gig_category": "Data & Scraping"
+        })
+        assert refresh_res.status_code == 200
+        assert "recommended_tags" in refresh_res.json()
 
-    scheduled_res = client.post("/api/seo/run-scheduled")
-    assert scheduled_res.status_code == 200
-    assert scheduled_res.json()["status"] == "success"
+        scheduled_res = client.post("/api/seo/run-scheduled")
+        assert scheduled_res.status_code == 200
+        assert scheduled_res.json()["status"] == "success"
 
 def test_api_inbox_history():
     res = client.get("/api/inbox/history")

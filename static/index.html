@@ -973,42 +973,50 @@
             <!-- Fiverr Connection Box -->
             <div style="background:#0d1322;border:1px solid var(--card-border);border-radius:8px;padding:16px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="font-weight:700;color:var(--text);">Fiverr Account</span>
+                <span style="font-weight:700;color:var(--text);font-size:1rem;">Fiverr Account</span>
                 <span id="status-fiverr" class="tag-chip" style="margin:0;">Checking...</span>
               </div>
               <div class="form-group" style="margin-bottom:10px;">
-                <label class="form-label">Session Cookie (_fiverr_session)</label>
-                <input type="password" id="cookie-fiverr" class="form-input" placeholder="Paste _fiverr_session cookie">
+                <label class="form-label">Session Token or Full Cookie String</label>
+                <input type="text" id="cookie-fiverr" class="form-input" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;" placeholder="Paste _fiverr_session token, raw BAh7..., or Cookie header">
               </div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                <button class="btn btn-sm" onclick="savePlatformCookie('fiverr')">Attach Cookie</button>
-                <button class="btn btn-secondary btn-sm" id="btn-browser-fiverr" onclick="launchBrowserLogin('fiverr')">🖥️ Auto Login</button>
-                <button class="btn btn-secondary btn-sm" onclick="openSystemBrowser('fiverr')">🌐 System Browser</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                <button class="btn btn-sm" onclick="savePlatformCookie('fiverr')">💾 Attach Cookie</button>
+                <button class="btn btn-secondary btn-sm" onclick="openSystemBrowser('fiverr')">🌐 Open Login Tab</button>
+                <button class="btn btn-secondary btn-sm" id="btn-browser-fiverr" onclick="launchBrowserLogin('fiverr')">🖥️ Auto Window</button>
                 <button class="btn btn-danger btn-sm" onclick="disconnectPlatform('fiverr')">Disconnect</button>
               </div>
-              <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.4;">
-                💡 <b>Quick Cookie:</b> In your browser, press <b>F12</b> &rarr; <b>Application</b> &rarr; <b>Cookies</b> &rarr; copy <code>_fiverr_session</code>.
+              <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.02);padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.05);">
+                <b style="color:var(--accent);">How to connect in 30 seconds:</b><br/>
+                1. Click <b>🌐 Open Login Tab</b> to log into Fiverr.<br/>
+                2. On Fiverr, press <b>F12</b> &rarr; <b>Console</b> &rarr; type <code>copy(document.cookie)</code> and press Enter (or copy <code>_fiverr_session</code> from <b>Application &rarr; Cookies</b>).<br/>
+                3. Paste into the box above and click <b>💾 Attach Cookie</b>.<br/>
+                <i>Or run <code>login.bat</code> in the project folder for automatic desktop browser login.</i>
               </div>
             </div>
 
             <!-- Upwork Connection Box -->
             <div style="background:#0d1322;border:1px solid var(--card-border);border-radius:8px;padding:16px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="font-weight:700;color:var(--text);">Upwork Account</span>
+                <span style="font-weight:700;color:var(--text);font-size:1rem;">Upwork Account</span>
                 <span id="status-upwork" class="tag-chip" style="margin:0;">Checking...</span>
               </div>
               <div class="form-group" style="margin-bottom:10px;">
-                <label class="form-label">Session Token (oauth2_global_js_token)</label>
-                <input type="password" id="cookie-upwork" class="form-input" placeholder="Paste session token">
+                <label class="form-label">Session Token or Full Cookie String</label>
+                <input type="text" id="cookie-upwork" class="form-input" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;" placeholder="Paste oauth2_global_js_token, eyJ..., or Cookie header">
               </div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                <button class="btn btn-sm" onclick="savePlatformCookie('upwork')">Attach Cookie</button>
-                <button class="btn btn-secondary btn-sm" id="btn-browser-upwork" onclick="launchBrowserLogin('upwork')">🖥️ Auto Login</button>
-                <button class="btn btn-secondary btn-sm" onclick="openSystemBrowser('upwork')">🌐 System Browser</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                <button class="btn btn-sm" onclick="savePlatformCookie('upwork')">💾 Attach Cookie</button>
+                <button class="btn btn-secondary btn-sm" onclick="openSystemBrowser('upwork')">🌐 Open Login Tab</button>
+                <button class="btn btn-secondary btn-sm" id="btn-browser-upwork" onclick="launchBrowserLogin('upwork')">🖥️ Auto Window</button>
                 <button class="btn btn-danger btn-sm" onclick="disconnectPlatform('upwork')">Disconnect</button>
               </div>
-              <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.4;">
-                💡 <b>Quick Cookie:</b> In your browser, press <b>F12</b> &rarr; <b>Application</b> &rarr; <b>Cookies</b> &rarr; copy <code>oauth2_global_js_token</code>.
+              <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.02);padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.05);">
+                <b style="color:var(--accent);">How to connect in 30 seconds:</b><br/>
+                1. Click <b>🌐 Open Login Tab</b> to log into Upwork.<br/>
+                2. On Upwork, press <b>F12</b> &rarr; <b>Console</b> &rarr; type <code>copy(document.cookie)</code> and press Enter (or copy <code>oauth2_global_js_token</code> from <b>Application &rarr; Cookies</b>).<br/>
+                3. Paste into the box above and click <b>💾 Attach Cookie</b>.<br/>
+                <i>Or run <code>login.bat</code> in the project folder for automatic desktop browser login.</i>
               </div>
             </div>
           </div>
@@ -1815,7 +1823,7 @@
       const input = document.getElementById('cookie-' + platform);
       const val = (input ? input.value : '').trim();
       if (!val) {
-        alert('Please paste the session cookie first.');
+        alert('Please paste your cookie, token, or full Cookie header first.');
         return;
       }
       try {
@@ -1827,7 +1835,7 @@
         const res = await resp.json();
         alert(res.message);
         if (input) input.value = '';
-        loadAccountStatus();
+        await loadAccountStatus();
       } catch (e) {
         alert('Connection error: ' + e);
       }
@@ -1835,9 +1843,9 @@
 
     async function launchBrowserLogin(platform) {
       const btn = document.getElementById('btn-browser-' + platform);
-      const originalText = btn ? btn.innerHTML : '🖥️ Auto Login';
+      const originalText = btn ? btn.innerHTML : '🖥️ Auto Window';
       if (btn) {
-        btn.innerHTML = '<span class="spinner"></span> Opening Browser...';
+        btn.innerHTML = '<span class="spinner"></span> Opening...';
         btn.disabled = true;
       }
 
@@ -1848,10 +1856,16 @@
           body: JSON.stringify({platform})
         });
         const res = await resp.json();
-        alert(res.message);
-        loadAccountStatus();
+        if (res.status === 'fallback_needed' || res.status === 'error') {
+          openSystemBrowser(platform);
+          alert((res.message || 'Opening login tab in your browser.') + '\n\nOpened login in a new tab! Once logged in, copy your session token and click Attach Cookie.');
+        } else {
+          alert(res.message);
+        }
+        await loadAccountStatus();
       } catch (e) {
-        alert('Browser login notification: ' + e);
+        openSystemBrowser(platform);
+        alert('Notice: ' + e + '\nOpened login in your browser tab!');
       } finally {
         if (btn) {
           btn.innerHTML = originalText;
@@ -1860,18 +1874,20 @@
       }
     }
 
-    async function openSystemBrowser(platform) {
-      try {
-        const resp = await fetch('/api/reach/open-system-browser', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({platform})
-        });
-        const res = await resp.json();
-        alert(res.message);
-      } catch (e) {
-        alert('Failed to launch system browser: ' + e);
-      }
+    function openSystemBrowser(platform) {
+      const url = platform === 'fiverr' 
+        ? 'https://www.fiverr.com/login' 
+        : 'https://www.upwork.com/ab/account-security/login';
+      
+      // Client-side window.open is 100% reliable in user's active browser
+      window.open(url, '_blank');
+
+      // Also trigger backend system browser open
+      fetch('/api/reach/open-system-browser', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({platform})
+      }).catch(() => {});
     }
 
     async function disconnectPlatform(platform) {

@@ -76,17 +76,19 @@ def test_api_gig_audit_and_persist():
 
 def test_api_outreach_endpoint():
     """Verify POST /api/proposals/outreach drafts 82-rule cold outreach."""
-    res = client.post("/api/proposals/outreach", json={
-        "prospect_name_or_company": "Acme Logistics",
-        "prospect_problem_or_tech": "Slow PostgreSQL invoice query bottlenecks",
-        "outreach_channel": "direct_message",
-        "specific_observation": "Observed 3.2s query latency on your tracking dashboard"
-    })
-    assert res.status_code == 200
-    data = res.json()
-    assert "outreach_text" in data
-    assert "Acme Logistics" in data["prospect"]
-    assert len(data["outreach_text"]) > 20
+    with patch("core.llm.client.UniversalLLMClient.generate") as mock_gen:
+        mock_gen.return_value = "Observed 3.2s query latency on your tracking dashboard. We can cut your order execution latency down using async connection pooling. Would you like to review the benchmark results?"
+        res = client.post("/api/proposals/outreach", json={
+            "prospect_name_or_company": "Acme Logistics",
+            "prospect_problem_or_tech": "Slow PostgreSQL invoice query bottlenecks",
+            "outreach_channel": "direct_message",
+            "specific_observation": "Observed 3.2s query latency on your tracking dashboard"
+        })
+        assert res.status_code == 200
+        data = res.json()
+        assert "outreach_text" in data
+        assert "Acme Logistics" in data["prospect"]
+        assert len(data["outreach_text"]) > 20
 
 def test_api_proposals_delete_and_404():
     """Verify proposal save, delete, and 404 error handling."""
@@ -160,18 +162,26 @@ def test_mcp_all_tools_registered():
         assert exp in tool_names, f"Tool {exp} should be registered in MCP server"
 
     # Test executing draft_outreach tool
-    outreach_res = server.execute_tool("draft_outreach", {
-        "prospect_name_or_company": "Beta Corp",
-        "prospect_problem_or_tech": "FastAPI migration"
-    })
-    assert "outreach_text" in outreach_res
+    with patch("core.llm.client.UniversalLLMClient.generate") as mock_gen:
+        mock_gen.return_value = "Hello Beta Corp, here is our plan for FastAPI migration."
+        outreach_res = server.execute_tool("draft_outreach", {
+            "prospect_name_or_company": "Beta Corp",
+            "prospect_problem_or_tech": "FastAPI migration"
+        })
+        assert "outreach_text" in outreach_res
 
-    # Test executing optimize_profile tool
-    prof_res = server.execute_tool("optimize_profile", {
-        "primary_role": "Python Backend Engineer",
-        "core_skills": ["Python", "FastAPI", "PostgreSQL"]
-    })
-    assert "bio_summary" in prof_res
+        import json
+        mock_gen.return_value = json.dumps({
+            "title_tagline": "Senior Python Backend Engineer",
+            "bio_summary": "Architecting resilient backends with FastAPI and PostgreSQL.",
+            "skills_list": ["Python", "FastAPI", "PostgreSQL"],
+            "portfolio_highlight": "High throughput microservices."
+        })
+        prof_res = server.execute_tool("optimize_profile", {
+            "primary_role": "Python Backend Engineer",
+            "core_skills": ["Python", "FastAPI", "PostgreSQL"]
+        })
+        assert "bio_summary" in prof_res
 
 def test_reach_reader_ssl_fallback():
     """Verify ReachReader handles network responses cleanly without crashing."""

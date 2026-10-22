@@ -1,5 +1,5 @@
 import json
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 
 from api.app import app
@@ -98,15 +98,16 @@ def test_settings_api_key_masking_and_preservation():
 
 def test_seo_weekly_refresh_route_string_tags():
     """Verify POST /api/seo/weekly-refresh accepts comma-separated string tags without 422."""
-    resp = client.post("/api/seo/weekly-refresh", json={
-        "current_tags": "python, fastapi, rest api",
-        "gig_title": "I will build python rest api",
-        "gig_category": "Programming & Tech"
-    })
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "recommended_tags" in data
-    assert len(data["recommended_tags"]) == 5
+    with patch("core.llm.client.UniversalLLMClient.generate", return_value="fastapi-dev, rest-api, python-backend, microservice, docker"):
+        resp = client.post("/api/seo/weekly-refresh", json={
+            "current_tags": "python, fastapi, rest api",
+            "gig_title": "I will build python rest api",
+            "gig_category": "Programming & Tech"
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "recommended_tags" in data
+        assert len(data["recommended_tags"]) == 5
 
 
 def test_health_check_endpoint():

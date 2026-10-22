@@ -1,6 +1,8 @@
 import os
 import json
 import time
+import re
+import urllib.parse
 import webbrowser
 import concurrent.futures
 from typing import Dict, Any, Optional, List
@@ -30,6 +32,7 @@ class FreelanceBrowserAgent:
     def is_authenticated(self, platform: str = "fiverr") -> bool:
         """
         Checks if real authenticated session cookie or marker exists for the given platform.
+        Checks .authenticated file, storage_state.json, and SQLite database settings.
         """
         auth_file = os.path.join(self.user_data_dir, f".authenticated_{platform}")
         if os.path.exists(auth_file):
@@ -42,18 +45,24 @@ class FreelanceBrowserAgent:
                 with open(state_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     cookies = data.get("cookies", [])
-                    if platform == "fiverr":
-                        for c in cookies:
-                            if c.get("name") in ("_fiverr_session", "user_session", "_fiverr_token", "logged_in") and len(str(c.get("value", ""))) > 5:
-                                return True
-                    elif platform == "upwork":
-                        for c in cookies:
-                            if c.get("name") in ("oauth2_global_js_token", "master_access_token", "user_uid", "current_organization_uid") and len(str(c.get("value", ""))) > 5:
-                                return True
-                    elif len(cookies) > 0:
+                    if len(cookies) > 0 and any(len(str(c.get("value", ""))) > 5 for c in cookies):
                         return True
             except Exception:
                 pass
+
+        # Check SQLite database settings table
+        try:
+            from core.db.database import get_connection
+            conn = get_connection()
+            c = conn.cursor()
+            c.execute("SELECT value FROM settings WHERE key = ?", (f"{platform.upper()}_CONNECTED",))
+            row = c.fetchone()
+            conn.close()
+            if row and row["value"] == "true":
+                return True
+        except Exception:
+            pass
+
         return False
 
     def get_auth_status(self) -> Dict[str, Any]:
@@ -86,69 +95,133 @@ class FreelanceBrowserAgent:
             except concurrent.futures.TimeoutError:
                 return {"status": "error", "message": f"Browser operation timed out after {timeout} seconds."}
 
-    def _launch_context(self, playwright_instance, platform: str = "fiverr", headless: bool = False, viewport: Optional[Dict[str, int]] = None):
+    def parse_cookie_input(self, raw_input: str, platform: str = "fiverr") -> Dict[str, str]:
         """
-        Launches persistent context with clean lock handling and stealth parameters.
+        Parses any format of cookie string:
+        - Raw token (e.g. BAh7... or eyJ...)
+        - name=value (e.g. _fiverr_session=xyz)
+        - Full Cookie header (e.g. Cookie: _fiverr_session=xyz; logged_in=true; path=/; domain=.fiverr.com)
+        - Semicolon-separated cookies
+        - JSON array or object from browser extensions (EditThisCookie, Cookie-Editor)
+        Returns dict with {"name": cookie_name, "value": clean_token}
         """
-        platform_dir = os.path.join(self.user_data_dir, platform)
-        os.makedirs(platform_dir, exist_ok=True)
-        self._clean_profile_locks(platform_dir)
+        s = (raw_input or "").strip().strip("'\"")
+        default_name = "_fiverr_session" if platform == "fiverr" else "oauth2_global_js_token"
 
-        channels = [None, "chrome", "msedge"]
-        errors = []
+        if not s:
+            return {"name": default_name, "value": ""}
 
-        for ch in channels:
+        # 1. JSON parse attempt (from cookie extensions like EditThisCookie)
+        if s.startswith("[") or s.startswith("{"):
             try:
-                kwargs = {
-                    "user_data_dir": platform_dir,
-                    "headless": headless,
-                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-                    "ignore_default_args": ["--enable-automation"],
-                    "args": [
-                        "--disable-blink-features=AutomationControlled",
-                        "--no-first-run",
-                        "--no-default-browser-check",
-                        "--disable-infobars"
-                    ]
-                }
-                storage_state_file = os.path.join(self.user_data_dir, f"storage_state_{platform}.json")
-                if os.path.exists(storage_state_file):
-                    kwargs["storage_state"] = storage_state_file
-                if ch:
-                    kwargs["channel"] = ch
-                if viewport:
-                    kwargs["viewport"] = viewport
-                return playwright_instance.chromium.launch_persistent_context(**kwargs)
-            except Exception as e:
-                errors.append(f"{ch or 'default'}: {str(e)}")
-                continue
+                data = json.loads(s)
+                target_names = (
+                    "_fiverr_session", "user_session", "_fiverr_token", "logged_in",
+                    "oauth2_global_js_token", "master_access_token", "user_uid", "current_organization_uid"
+                )
+                if isinstance(data, list):
+                    for item in data:
+                        if isinstance(item, dict) and item.get("name") in target_names and item.get("value"):
+                            return {"name": item["name"], "value": str(item["value"]).strip()}
+                    if data and isinstance(data[0], dict) and "value" in data[0]:
+                        return {"name": data[0].get("name", default_name), "value": str(data[0]["value"]).strip()}
+                elif isinstance(data, dict):
+                    for k, v in data.items():
+                        if k in target_names:
+                            return {"name": k, "value": str(v).strip()}
+                    if "cookies" in data and isinstance(data["cookies"], list):
+                        for item in data["cookies"]:
+                            if isinstance(item, dict) and item.get("name") in target_names and item.get("value"):
+                                return {"name": item["name"], "value": str(item["value"]).strip()}
+            except Exception:
+                pass
 
-        raise RuntimeError(f"Could not launch browser context. Attempted channels: {errors}")
+        # 2. Strip "Cookie:" or "cookie:" header prefix if present
+        if s.lower().startswith("cookie:"):
+            s = s[7:].strip()
+
+        # 3. Check if it's explicitly a raw base64 or JWT token (e.g. BAh7..., eyJ...)
+        # Base64 Ruby Marshal (_fiverr_session) starts with BAh7. JWT starts with eyJ.
+        if s.startswith("BAh7") or s.startswith("eyJ"):
+            return {"name": default_name, "value": s}
+
+        # 4. If multiple cookies or attributes separated by semicolons
+        if ";" in s:
+            parts = [p.strip() for p in s.split(";") if p.strip()]
+            target_keys = (
+                "_fiverr_session", "user_session", "_fiverr_token", "logged_in",
+                "oauth2_global_js_token", "master_access_token", "user_uid", "current_organization_uid"
+            )
+            for part in parts:
+                if "=" in part:
+                    k, v = part.split("=", 1)
+                    k = k.strip()
+                    v = v.strip().strip("'\"")
+                    if k in target_keys and len(v) > 3:
+                        return {"name": k, "value": urllib.parse.unquote(v)}
+            for part in parts:
+                if "=" in part:
+                    k, v = part.split("=", 1)
+                    k = k.strip()
+                    v = v.strip().strip("'\"")
+                    if k.lower() not in ("path", "domain", "expires", "samesite", "secure", "httponly", "max-age"):
+                        if len(v) > 5:
+                            return {"name": k, "value": urllib.parse.unquote(v)}
+
+        # 5. If single string formatted as key=value
+        if "=" in s:
+            k, v = s.split("=", 1)
+            k = k.strip()
+            v = v.strip().strip("'\"")
+            target_keys = (
+                "_fiverr_session", "user_session", "_fiverr_token", "logged_in",
+                "oauth2_global_js_token", "master_access_token", "user_uid", "current_organization_uid",
+                "token", "session", "auth_token"
+            )
+            if k in target_keys:
+                return {"name": k, "value": urllib.parse.unquote(v)}
+
+            # Base64 padding edge case: e.g. token ending in "==" resulted in k="token", v="="
+            if v == "=" or v == "" or (len(v) < 3 and len(k) > 15):
+                return {"name": default_name, "value": s}
+
+            if len(k) < 30 and re.match(r'^[a-zA-Z0-9_\-]+$', k) and len(v) >= 3:
+                return {"name": k, "value": urllib.parse.unquote(v)}
+
+        # 6. Fallback: Raw token
+        return {"name": default_name, "value": urllib.parse.unquote(s)}
 
     def save_cookie(self, cookie_string: str, platform: str = "fiverr") -> Dict[str, Any]:
         """
         Directly injects the user's session cookie, saves persistent state, and marks authenticated.
-        Supports raw token or full 'name=value' cookie string.
+        Supports raw token, name=value, full Cookie headers, and extension JSON formats.
         """
-        token = (cookie_string or "").strip().strip('"').strip("'")
+        parsed = self.parse_cookie_input(cookie_string, platform=platform)
+        cookie_name = parsed["name"]
+        token = parsed["value"]
+
         if not token or len(token) < 5:
             return {"status": "error", "message": "Invalid cookie token. Please provide a valid session string."}
 
-        cookie_name = "_fiverr_session" if platform == "fiverr" else "oauth2_global_js_token"
         domain = ".fiverr.com" if platform == "fiverr" else ".upwork.com"
-
-        if "=" in token and not token.startswith("ey"):
-            parts = token.split("=", 1)
-            cookie_name = parts[0].strip()
-            token = parts[1].strip()
-
         storage_state_file = os.path.join(self.user_data_dir, f"storage_state_{platform}.json")
+
         state_data = {
             "cookies": [
                 {
                     "name": cookie_name,
                     "value": token,
                     "domain": domain,
+                    "path": "/",
+                    "expires": int(time.time()) + (180 * 24 * 3600),
+                    "httpOnly": True,
+                    "secure": True,
+                    "sameSite": "Lax"
+                },
+                {
+                    "name": cookie_name,
+                    "value": token,
+                    "domain": f"www{domain}",
                     "path": "/",
                     "expires": int(time.time()) + (180 * 24 * 3600),
                     "httpOnly": True,
@@ -167,13 +240,31 @@ class FreelanceBrowserAgent:
 
         try:
             with open(os.path.join(self.user_data_dir, f".authenticated_{platform}"), "w", encoding="utf-8") as f:
-                f.write(f"authenticated_at={time.time()}\nmethod=cookie\nplatform={platform}\n")
+                f.write(f"authenticated_at={time.time()}\nmethod=cookie\nplatform={platform}\ncookie_name={cookie_name}\n")
         except Exception as e:
             return {"status": "error", "message": f"Failed to write auth marker: {str(e)}"}
 
+        # Also sync to SQLite database settings table so state is doubly persistent!
+        try:
+            from core.db.database import get_connection
+            conn = get_connection()
+            c = conn.cursor()
+            c.execute(
+                "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                (f"{platform.upper()}_CONNECTED", "true")
+            )
+            c.execute(
+                "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                (f"{platform.upper()}_AUTH_METHOD", "cookie")
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
         return {
             "status": "success",
-            "message": f"{platform.capitalize()} connected successfully via session cookie!"
+            "message": f"{platform.capitalize()} connected successfully via session cookie ({cookie_name})!"
         }
 
     def disconnect(self, platform: str = "fiverr") -> Dict[str, Any]:
@@ -189,6 +280,20 @@ class FreelanceBrowserAgent:
         platform_dir = os.path.join(self.user_data_dir, platform)
         self._clean_profile_locks(platform_dir)
 
+        # Clear in SQLite settings
+        try:
+            from core.db.database import get_connection
+            conn = get_connection()
+            c = conn.cursor()
+            c.execute(
+                "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                (f"{platform.upper()}_CONNECTED", "false")
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
         return {"status": "success", "message": f"{platform.capitalize()} session disconnected."}
 
     def open_system_browser(self, platform: str = "fiverr") -> Dict[str, Any]:
@@ -198,7 +303,7 @@ class FreelanceBrowserAgent:
             webbrowser.open(target_url, new=2)
             return {
                 "status": "success",
-                "message": f"Opened {platform.capitalize()} in your default system browser. Log in, copy your session cookie, and attach it below!"
+                "message": f"Opened {platform.capitalize()} login page in your browser. Log in, copy your session cookie, and attach it below!"
             }
         except Exception as e:
             return {"status": "error", "message": f"Failed to open system browser: {str(e)}"}
@@ -212,22 +317,19 @@ class FreelanceBrowserAgent:
         target_url = "https://www.fiverr.com/login" if platform == "fiverr" else "https://www.upwork.com/ab/account-security/login"
 
         if not self.is_playwright_available():
-            # If Playwright is missing, open system browser directly
             webbrowser.open(target_url, new=2)
             return {
-                "status": "opened_system_browser",
-                "message": f"Playwright not found. Opened {platform.capitalize()} in your default browser! Log in, copy your cookie, and attach it below."
+                "status": "fallback_needed",
+                "message": f"Playwright not found. Opened {platform.capitalize()} in your default browser tab! Log in, copy your cookie, and attach it below."
             }
 
         def _action():
             from playwright.sync_api import sync_playwright
             try:
                 with sync_playwright() as p:
-                    # Clean lock files first
                     platform_dir = os.path.join(self.user_data_dir, platform)
                     self._clean_profile_locks(platform_dir)
 
-                    # Launch standard headed Chromium (isolated to prevent lock errors)
                     browser = p.chromium.launch(
                         headless=False,
                         args=[
@@ -302,16 +404,27 @@ class FreelanceBrowserAgent:
                                 f.write(f"authenticated_at={time.time()}\nmethod=browser_login\nplatform={platform}\n")
                         except Exception:
                             pass
+                        try:
+                            from core.db.database import get_connection
+                            conn = get_connection()
+                            c = conn.cursor()
+                            c.execute(
+                                "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                                (f"{platform.upper()}_CONNECTED", "true")
+                            )
+                            conn.commit()
+                            conn.close()
+                        except Exception:
+                            pass
                         return {"status": "success", "message": f"{platform.capitalize()} connected successfully! Your session is active."}
                     else:
                         return {"status": "cancelled", "message": "Browser was closed before login was detected. You can also paste your session cookie directly!"}
 
             except Exception as launch_err:
-                # If automated browser cannot be displayed, open in default system browser
                 webbrowser.open(target_url, new=2)
                 return {
-                    "status": "opened_system_browser",
-                    "message": f"Automated window could not open ({str(launch_err)}). Opened {platform.capitalize()} in your default browser! Log in and paste your cookie below."
+                    "status": "fallback_needed",
+                    "message": f"Automated window could not open in this background environment ({str(launch_err)}). Opened {platform.capitalize()} in your browser tab! Please log in and paste your cookie below."
                 }
 
         try:
@@ -319,6 +432,6 @@ class FreelanceBrowserAgent:
         except Exception as e:
             webbrowser.open(target_url, new=2)
             return {
-                "status": "opened_system_browser",
-                "message": f"Opened in system browser: {str(e)}. Please paste session cookie below!"
+                "status": "fallback_needed",
+                "message": f"Opened login in browser tab: {str(e)}. Please paste session cookie below!"
             }
