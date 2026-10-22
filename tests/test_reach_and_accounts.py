@@ -53,6 +53,16 @@ def test_reach_feed_lifecycle_api():
     assert len(posts) > 0
     assert any("FastAPI backend" in p.get("post_text", "") for p in posts)
 
+    # Test delete
+    post_id = add_resp.json()["id"]
+    del_resp = client.delete(f"/api/reach/feed/{post_id}")
+    assert del_resp.status_code == 200
+    assert del_resp.json()["status"] == "deleted"
+
+    # Test delete non-existent 404
+    del_404 = client.delete("/api/reach/feed/99999999")
+    assert del_404.status_code == 404
+
 def test_reach_feed_engine_brain_angle():
     """Verify ReachFeedEngine synthesizes winning angles grounded in the Brain."""
     engine = ReachFeedEngine()

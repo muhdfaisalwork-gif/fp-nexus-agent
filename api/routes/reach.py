@@ -59,6 +59,22 @@ def get_feed(limit: int = 30):
     posts = feed_engine.get_recent_scanned_posts(limit=limit)
     return {"posts": posts, "count": len(posts)}
 
+@router.delete("/feed/{post_id}")
+def delete_feed_post(post_id: int):
+    """Deletes an item from the scanned feed."""
+    from core.db.database import get_connection
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        c.execute("DELETE FROM scanned_feed_posts WHERE id = ?", (post_id,))
+        deleted = c.rowcount
+        conn.commit()
+        if deleted == 0:
+            raise HTTPException(status_code=404, detail="Feed post not found")
+        return {"status": "deleted", "id": post_id}
+    finally:
+        conn.close()
+
 @router.post("/feed")
 def add_feed_post(req: AddFeedPostRequest):
     """Manually adds or saves a job post or buyer brief into the active Reach feed."""

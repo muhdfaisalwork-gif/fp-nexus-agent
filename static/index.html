@@ -1937,6 +1937,7 @@
             <td style="font-size:0.75rem;color:var(--text-dim);">${p.scanned_at || ''}</td>
             <td>
               <button class="btn btn-secondary btn-sm" onclick="populateProposalFromFeed('${encodeURIComponent(p.post_text || '')}', '${p.platform || 'upwork'}')">Draft Proposal</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteFeedPost(${p.id})">Delete</button>
             </td>
           </tr>
         `).join('');
@@ -1951,6 +1952,20 @@
       document.getElementById('prop-job-desc').value = text;
       if (document.getElementById('prop-platform')) {
         document.getElementById('prop-platform').value = platform;
+      }
+    }
+
+    async function deleteFeedPost(id) {
+      if (!confirm('Are you sure you want to delete this feed item?')) return;
+      try {
+        const resp = await fetch('/api/reach/feed/' + id, {method: 'DELETE'});
+        if (resp.ok) {
+          loadReachFeed();
+        } else {
+          alert('Failed to delete feed item');
+        }
+      } catch (e) {
+        alert('Delete error: ' + e);
       }
     }
 
