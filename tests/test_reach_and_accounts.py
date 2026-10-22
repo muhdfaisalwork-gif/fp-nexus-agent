@@ -75,3 +75,25 @@ def test_reach_feed_engine_brain_angle():
     assert "buyer_pain_point" in angle
     assert "brain_proof_citation" in angle
     assert "recommended_hook" in angle
+
+def test_open_system_browser_api():
+    """Verify POST /api/reach/open-system-browser succeeds."""
+    resp = client.post("/api/reach/open-system-browser", json={"platform": "fiverr"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] in ("success", "opened_system_browser")
+    assert "Fiverr" in data["message"]
+
+def test_browser_agent_clean_locks(tmp_path):
+    """Verify _clean_profile_locks removes stale lock files."""
+    agent = FreelanceBrowserAgent()
+    test_dir = str(tmp_path / "test_locks")
+    import os
+    os.makedirs(test_dir, exist_ok=True)
+    lock_file = os.path.join(test_dir, "lockfile")
+    with open(lock_file, "w") as f:
+        f.write("test_pid")
+    assert os.path.exists(lock_file)
+    agent._clean_profile_locks(test_dir)
+    assert not os.path.exists(lock_file)
+

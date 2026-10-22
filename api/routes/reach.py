@@ -47,6 +47,12 @@ def connect_browser(req: ConnectBrowserRequest):
     res = browser_agent.launch_interactive_login(platform=req.platform or "fiverr")
     return res
 
+@router.post("/open-system-browser")
+def open_system_browser(req: ConnectBrowserRequest):
+    """Opens system default browser directly to the login page."""
+    res = browser_agent.open_system_browser(platform=req.platform or "fiverr")
+    return res
+
 @router.post("/disconnect")
 def disconnect_platform(req: ConnectBrowserRequest):
     """Disconnects session cookies for the specified platform."""

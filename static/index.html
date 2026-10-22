@@ -980,10 +980,14 @@
                 <label class="form-label">Session Cookie (_fiverr_session)</label>
                 <input type="password" id="cookie-fiverr" class="form-input" placeholder="Paste _fiverr_session cookie">
               </div>
-              <div style="display:flex;gap:8px;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                 <button class="btn btn-sm" onclick="savePlatformCookie('fiverr')">Attach Cookie</button>
-                <button class="btn btn-secondary btn-sm" onclick="launchBrowserLogin('fiverr')">Browser Login</button>
+                <button class="btn btn-secondary btn-sm" id="btn-browser-fiverr" onclick="launchBrowserLogin('fiverr')">🖥️ Auto Login</button>
+                <button class="btn btn-secondary btn-sm" onclick="openSystemBrowser('fiverr')">🌐 System Browser</button>
                 <button class="btn btn-danger btn-sm" onclick="disconnectPlatform('fiverr')">Disconnect</button>
+              </div>
+              <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.4;">
+                💡 <b>Quick Cookie:</b> In your browser, press <b>F12</b> &rarr; <b>Application</b> &rarr; <b>Cookies</b> &rarr; copy <code>_fiverr_session</code>.
               </div>
             </div>
 
@@ -994,13 +998,17 @@
                 <span id="status-upwork" class="tag-chip" style="margin:0;">Checking...</span>
               </div>
               <div class="form-group" style="margin-bottom:10px;">
-                <label class="form-label">Session Token (master / oauth)</label>
+                <label class="form-label">Session Token (oauth2_global_js_token)</label>
                 <input type="password" id="cookie-upwork" class="form-input" placeholder="Paste session token">
               </div>
-              <div style="display:flex;gap:8px;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                 <button class="btn btn-sm" onclick="savePlatformCookie('upwork')">Attach Cookie</button>
-                <button class="btn btn-secondary btn-sm" onclick="launchBrowserLogin('upwork')">Browser Login</button>
+                <button class="btn btn-secondary btn-sm" id="btn-browser-upwork" onclick="launchBrowserLogin('upwork')">🖥️ Auto Login</button>
+                <button class="btn btn-secondary btn-sm" onclick="openSystemBrowser('upwork')">🌐 System Browser</button>
                 <button class="btn btn-danger btn-sm" onclick="disconnectPlatform('upwork')">Disconnect</button>
+              </div>
+              <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.4;">
+                💡 <b>Quick Cookie:</b> In your browser, press <b>F12</b> &rarr; <b>Application</b> &rarr; <b>Cookies</b> &rarr; copy <code>oauth2_global_js_token</code>.
               </div>
             </div>
           </div>
@@ -1826,7 +1834,13 @@
     }
 
     async function launchBrowserLogin(platform) {
-      alert(`Launching interactive browser window to log in to ${platform.toUpperCase()}. Please complete login in the opened browser window.`);
+      const btn = document.getElementById('btn-browser-' + platform);
+      const originalText = btn ? btn.innerHTML : '🖥️ Auto Login';
+      if (btn) {
+        btn.innerHTML = '<span class="spinner"></span> Opening Browser...';
+        btn.disabled = true;
+      }
+
       try {
         const resp = await fetch('/api/reach/connect-browser', {
           method: 'POST',
@@ -1837,7 +1851,26 @@
         alert(res.message);
         loadAccountStatus();
       } catch (e) {
-        alert('Browser login error: ' + e);
+        alert('Browser login notification: ' + e);
+      } finally {
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    async function openSystemBrowser(platform) {
+      try {
+        const resp = await fetch('/api/reach/open-system-browser', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({platform})
+        });
+        const res = await resp.json();
+        alert(res.message);
+      } catch (e) {
+        alert('Failed to launch system browser: ' + e);
       }
     }
 
