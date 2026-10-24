@@ -80,12 +80,13 @@ class OpenRouterProvider(BaseLLMProvider):
                 "temperature": temperature,
                 "max_tokens": max_tokens
             }
+            timeout = int(os.getenv("OPENROUTER_TIMEOUT", "15"))
             try:
                 resp = requests.post(
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers=headers,
                     json=payload,
-                    timeout=45
+                    timeout=timeout
                 )
                 if resp.status_code == 200:
                     data = resp.json()

@@ -15,6 +15,7 @@ storage/*.db
 storage/*.db-journal
 storage/*.db-wal
 storage/browser_state/
+storage/test_screenshots/
 storage/briefs/*
 storage/images/*
 !storage/briefs/.gitkeep

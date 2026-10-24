@@ -1900,7 +1900,7 @@
         });
         const res = await resp.json();
         alert(res.message);
-        loadAccountStatus();
+        await loadAccountStatus();
       } catch (e) {
         alert('Disconnect error: ' + e);
       }
